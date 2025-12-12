@@ -1,0 +1,7 @@
+mcp
+fastapi
+uvicorn
+pillow
+matplotlib
+numpy
+

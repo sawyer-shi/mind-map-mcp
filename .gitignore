@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.vscode/
+test_mindmap.png
+mindmap_*.png
+base_*.png
+
