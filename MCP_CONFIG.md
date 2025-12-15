@@ -64,15 +64,19 @@ pip install -r requirements.txt
 
 #### 配置说明
 
-- `command`: 使用 `python` 或 `python3`（根据你的系统）
+- `command`: **必须使用 `python` 或 `python3`**，不要使用 `uv` 或 `uv run`
 - `args`: 
   - 第一个参数：**必须是本地文件的绝对路径**，例如 `D:\Work\Cursor\mind-map-mcp\server.py`
   - 第二个参数：`stdio`（用于本地连接）
 - `env`: 可选，设置环境变量（Windows 上建议设置 UTF-8 编码）
 
+**关键点**：
+- ✅ 使用 `python` 命令 + 本地绝对路径
+- ❌ 不要使用 `uv run` + GitHub URL
+
 ### 常见错误配置（不要使用）
 
-❌ **错误配置 1：使用 GitHub URL**
+❌ **错误配置 1：使用 GitHub URL + uv run**
 ```json
 {
   "command": "uv",
@@ -83,7 +87,10 @@ pip install -r requirements.txt
   ]
 }
 ```
-**问题**：临时目录没有依赖，无法访问 `src` 模块
+**问题**：
+- 临时目录没有安装任何依赖（mcp、pillow、matplotlib 等）
+- 无法访问 `src` 目录下的模块
+- 会导致 `ModuleNotFoundError: No module named 'mcp'` 错误
 
 ❌ **错误配置 2：使用相对路径**
 ```json
@@ -96,15 +103,23 @@ pip install -r requirements.txt
 ```
 **问题**：工作目录可能不正确
 
-✅ **正确配置：使用绝对路径**
+✅ **正确配置：使用 python + 本地绝对路径**
 ```json
 {
+  "command": "python",
   "args": [
     "D:\\Work\\Cursor\\mind-map-mcp\\server.py",
     "stdio"
-  ]
+  ],
+  "env": {
+    "PYTHONIOENCODING": "utf-8"
+  }
 }
 ```
+**优势**：
+- 使用本地已安装的 Python 环境和依赖
+- 可以正常访问项目中的所有模块（包括 `src` 目录）
+- 不会出现模块导入错误
 
 ## 验证配置
 

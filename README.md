@@ -80,7 +80,30 @@ python server.py stdio
 }
 ```
 
-⚠️ **Important**: Always use a **local absolute path** to `server.py`. Do NOT use GitHub URLs (e.g., `https://raw.githubusercontent.com/...`) as they will fail due to missing dependencies and module imports. See `MCP_CONFIG.md` for detailed configuration instructions.
+⚠️ **Important**: 
+- **Recommended**: Use a **local absolute path** to `server.py` for best performance and reliability.
+- **Alternative**: You can use `server_standalone.py` with GitHub URL + `uv run` (see below).
+
+### Using GitHub URL with uv run (Alternative)
+
+If you want to use GitHub URL for one-click installation, use `server_standalone.py`:
+
+```json
+{
+  "mcpServers": {
+    "mind-map": {
+      "command": "uv",
+      "args": [
+        "run",
+        "https://raw.githubusercontent.com/sawyer-shi/mind-map-mcp/master/server_standalone.py",
+        "stdio"
+      ]
+    }
+  }
+}
+```
+
+**Note**: The standalone version will automatically download `src` modules from GitHub on first run, which may be slower than using a local installation. See [GITHUB_URL_USAGE.md](GITHUB_URL_USAGE.md) for detailed instructions.
 
 ### 2. SSE Transport (Server-Sent Events - Deprecated)
 

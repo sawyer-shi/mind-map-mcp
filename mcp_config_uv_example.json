@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "excel-mcp-server": {
+      "command": "uvx excel-mcp-server stdio",
+      "env": {}
+    },
+    "mind-map-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "https://raw.githubusercontent.com/sawyer-shi/mind-map-mcp/master/server_standalone.py",
+        "stdio"
+      ]
+    }
+  }
+}
+
