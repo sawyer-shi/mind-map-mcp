@@ -2,6 +2,8 @@
 
 **🔒 完全本地部署 - 无需外部服务和 API 密钥 - 完整的数据隐私与安全保障**
 
+> ⚠️ **重要提示**：此 MCP 服务器**不能**直接从 GitHub URL 运行。你必须克隆仓库并在本地安装依赖。请参考下面的[安装](#安装)部分。
+
 一个基于 MCP (Model Context Protocol) 的思维导图生成服务，让你无需任何外部设计工具即可从 Markdown 文本生成精美的思维导图图片。完全本地部署，无需外部服务，无需 API 密钥，所有数据都在本地处理，确保完整的数据隐私和安全。将你的想法、笔记和结构化内容转换为可视化思维导图，与你的 AI 智能体无缝集成。
 
 ## 功能特性
@@ -24,11 +26,33 @@
 
 ## 安装
 
+### 快速安装（推荐）
+
+运行安装脚本，自动完成所有配置：
+
+```bash
+# 首先克隆仓库
+git clone https://github.com/sawyer-shi/mind-map-mcp.git
+cd mind-map-mcp
+
+# 运行安装脚本
+python install.py
+```
+
+安装脚本会自动：
+- 安装所有必需的依赖
+- 生成正确的 MCP 配置
+- 将配置保存到 Cursor 的 MCP 设置中
+
+### 手动安装
+
 1.  安装依赖：
 
 ```bash
 pip install -r requirements.txt
 ```
+
+2.  手动配置 MCP 服务器（详细说明请参考 [MCP_CONFIG.md](MCP_CONFIG.md)）
 
 ## 使用方法 (Usage)
 

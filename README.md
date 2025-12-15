@@ -1,7 +1,8 @@
 # Mind Map MCP Server
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=Mind+Map+MCP&config=eyJjb21tYW5kIjoidXYiLCJhcmdzIjpbInJ1biIsImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9zYXd5ZXItc2hpL21pbmQtbWFwLW1jcC9tYXN0ZXIvc2VydmVyLnB5Iiwic3RkaW8iXX0%3D)
 
 **🔒 Fully Local Deployment - No External Services or API Keys Required - Complete Data Privacy & Security**
+
+> ⚠️ **IMPORTANT**: This MCP server **cannot** be run directly from GitHub URLs. You must clone the repository and install dependencies locally. See [Installation](#installation) section below.
 
 A Model Context Protocol (MCP) server that lets you generate beautiful mind map images from Markdown text without needing any external design tools. Deploy completely locally with no external services, no API keys, and no data leaving your machine - ensuring complete data privacy and security. Transform your ideas, notes, and structured content into visual mind maps with your AI agent.
 
@@ -25,11 +26,33 @@ A Model Context Protocol (MCP) server that lets you generate beautiful mind map 
 
 ## Installation
 
+### Quick Install (Recommended)
+
+Run the installation script to automatically configure everything:
+
+```bash
+# Clone the repository first
+git clone https://github.com/sawyer-shi/mind-map-mcp.git
+cd mind-map-mcp
+
+# Run the installation script
+python install.py
+```
+
+The script will:
+- Install all required dependencies
+- Generate the correct MCP configuration
+- Save the configuration to Cursor's MCP settings
+
+### Manual Installation
+
 1.  Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+2.  Configure MCP server manually (see [MCP_CONFIG.md](MCP_CONFIG.md) for details)
 
 ## Usage
 

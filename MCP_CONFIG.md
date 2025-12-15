@@ -3,11 +3,27 @@
 ## 问题诊断
 
 如果你遇到以下错误：
+- `ModuleNotFoundError: No module named 'mcp'`
 - `ModuleNotFoundError: No module named 'uvicorn'`
 - `No server info found`
 - 服务无法启动
 
 这通常是因为配置不正确导致的。
+
+### 最常见的问题
+
+**错误日志示例**：
+```
+Starting new stdio process with command: uv run https://raw.githubusercontent.com/sawyer-shi/mind-map-mcp/master/server.py stdio
+ModuleNotFoundError: No module named 'mcp'
+```
+
+**原因**：使用了 GitHub URL 直接运行，导致：
+1. 临时目录没有安装任何依赖（mcp、pillow、matplotlib 等）
+2. 无法访问 `src` 目录下的模块
+3. 无法正常工作
+
+**解决方案**：必须使用本地文件路径，不能使用 GitHub URL！
 
 ## 正确的配置方法
 
