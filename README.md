@@ -2,7 +2,6 @@
 
 **🔒 Fully Local Deployment - No External Services or API Keys Required - Complete Data Privacy & Security**
 
-> ⚠️ **IMPORTANT**: This MCP server **cannot** be run directly from GitHub URLs. You must clone the repository and install dependencies locally. See [Installation](#installation) section below.
 
 A Model Context Protocol (MCP) server that lets you generate beautiful mind map images from Markdown text without needing any external design tools. Deploy completely locally with no external services, no API keys, and no data leaving your machine - ensuring complete data privacy and security. Transform your ideas, notes, and structured content into visual mind maps with your AI agent.
 
