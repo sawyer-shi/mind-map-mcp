@@ -48,7 +48,7 @@ python server.py stdio
     "mind-map": {
       "command": "python",
       "args": [
-        "/absolute/path/to/mind-map-mcp-pro/server.py",
+        "/absolute/path/to/mind-map-mcp/server.py",
         "stdio"
       ]
     }
