@@ -56,6 +56,8 @@ python server.py stdio
 }
 ```
 
+⚠️ **重要提示**：必须使用**本地绝对路径**指向 `server.py`。**不要使用 GitHub URL**（例如 `https://raw.githubusercontent.com/...`），因为临时目录缺少依赖和模块导入会失败。详细配置说明请参考 `MCP_CONFIG.md`。
+
 ### 2. SSE 传输 (Server-Sent Events - 已废弃)
 
 ```bash

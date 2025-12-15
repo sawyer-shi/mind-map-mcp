@@ -4,7 +4,7 @@ import json
 import argparse
 import sys
 import os
-import uvicorn
+# uvicorn is only needed for HTTP transports, import it lazily
 
 # Set UTF-8 encoding for Windows to avoid Chinese character encoding issues
 if sys.platform == 'win32':
@@ -18,7 +18,6 @@ from typing import Any, Dict, List, Optional
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.server.sse import SseServerTransport
 from mcp.types import (
     Tool, 
     TextContent, 
@@ -27,9 +26,7 @@ from mcp.types import (
     CallToolResult,
     CallToolRequest
 )
-from starlette.applications import Starlette
-from starlette.responses import Response
-from starlette.routing import Route
+# HTTP transport dependencies are imported lazily when needed
 
 # Import existing tool modules from src package
 from src import mind_map_center
@@ -162,73 +159,81 @@ async def handle_call_tool(name: str, arguments: dict | None) -> List[TextConten
         raise ValueError(f"Unknown tool: {name}")
 
 # --- Transport Implementation ---
+# HTTP transport code is defined inside run_http() to avoid importing dependencies in stdio mode
 
-sse = SseServerTransport("/messages")
+def _create_starlette_app():
+    """Create Starlette app with HTTP routes (lazy import)"""
+    from mcp.server.sse import SseServerTransport
+    from starlette.applications import Starlette
+    from starlette.responses import Response
+    from starlette.routing import Route
+    
+    sse = SseServerTransport("/messages")
 
-async def handle_sse(request):
-    """Handle SSE (Server-Sent Events) transport"""
-    async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
-        await server.run(streams[0], streams[1], server.create_initialization_options())
+    async def handle_sse(request):
+        """Handle SSE (Server-Sent Events) transport"""
+        async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
+            await server.run(streams[0], streams[1], server.create_initialization_options())
 
-async def handle_messages(request):
-    """Handle POST messages for SSE transport"""
-    await sse.handle_post_message(request.scope, request.receive, request._send)
+    async def handle_messages(request):
+        """Handle POST messages for SSE transport"""
+        await sse.handle_post_message(request.scope, request.receive, request._send)
 
-async def handle_streamable_http(request):
-    """Handle Streamable HTTP transport (recommended for remote connections)"""
-    # Streamable HTTP uses the same SSE transport but with a different endpoint
-    # This allows clients to connect via HTTP POST to /mcp endpoint
-    async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
-        await server.run(streams[0], streams[1], server.create_initialization_options())
+    async def handle_streamable_http(request):
+        """Handle Streamable HTTP transport (recommended for remote connections)"""
+        # Streamable HTTP uses the same SSE transport but with a different endpoint
+        # This allows clients to connect via HTTP POST to /mcp endpoint
+        async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
+            await server.run(streams[0], streams[1], server.create_initialization_options())
 
-async def generate_mindmap_http(request):
-    """
-    Streamable HTTP endpoint to directly generate mind map images.
-    Expects JSON body: {"markdown_content": "...", "layout": "center|horizontal|free"}
-    Returns: PNG image
-    """
-    try:
-        body = await request.json()
-        content = body.get("markdown_content")
-        layout = body.get("layout", "free")
-        
-        if not content:
-            return Response("Missing 'markdown_content'", status_code=400)
-
-        if layout == "center":
-            tool_cls = mind_map_center.get_tool()
-        elif layout == "horizontal":
-            tool_cls = mind_map_horizontal.get_tool()
-        else:
-            tool_cls = mind_map_free.get_tool()
+    async def generate_mindmap_http(request):
+        """
+        Streamable HTTP endpoint to directly generate mind map images.
+        Expects JSON body: {"markdown_content": "...", "layout": "center|horizontal|free"}
+        Returns: PNG image
+        """
+        try:
+            body = await request.json()
+            content = body.get("markdown_content")
+            layout = body.get("layout", "free")
             
-        tool_instance = tool_cls()
-        params = {"markdown_content": content, "filename": "http_generated"}
-        
-        generator = tool_instance._invoke(params)
-        
-        image_data = None
-        for msg in generator:
-            if msg["type"] == "blob":
-                image_data = msg["blob"]
-                break
-        
-        if image_data:
-            return Response(image_data, media_type="image/png")
-        else:
-            return Response("Failed to generate image", status_code=500)
-            
-    except Exception as e:
-        return Response(f"Error: {str(e)}", status_code=500)
+            if not content:
+                return Response("Missing 'markdown_content'", status_code=400)
 
-starlette_app = Starlette(
-    routes=[
-        Route("/sse", endpoint=handle_sse),  # SSE transport endpoint
-        Route("/mcp", endpoint=handle_streamable_http),  # Streamable HTTP transport endpoint
-        Route("/messages", endpoint=handle_messages, methods=["POST"]),  # SSE messages endpoint
-        Route("/generate", endpoint=generate_mindmap_http, methods=["POST"]),  # Direct image generation endpoint
-    ]
-)
+            if layout == "center":
+                tool_cls = mind_map_center.get_tool()
+            elif layout == "horizontal":
+                tool_cls = mind_map_horizontal.get_tool()
+            else:
+                tool_cls = mind_map_free.get_tool()
+                
+            tool_instance = tool_cls()
+            params = {"markdown_content": content, "filename": "http_generated"}
+            
+            generator = tool_instance._invoke(params)
+            
+            image_data = None
+            for msg in generator:
+                if msg["type"] == "blob":
+                    image_data = msg["blob"]
+                    break
+            
+            if image_data:
+                return Response(image_data, media_type="image/png")
+            else:
+                return Response("Failed to generate image", status_code=500)
+                
+        except Exception as e:
+            return Response(f"Error: {str(e)}", status_code=500)
+
+    return Starlette(
+        routes=[
+            Route("/sse", endpoint=handle_sse),  # SSE transport endpoint
+            Route("/mcp", endpoint=handle_streamable_http),  # Streamable HTTP transport endpoint
+            Route("/messages", endpoint=handle_messages, methods=["POST"]),  # SSE messages endpoint
+            Route("/generate", endpoint=generate_mindmap_http, methods=["POST"]),  # Direct image generation endpoint
+        ]
+    )
 
 def run_stdio():
     """Run the server using stdio transport"""
@@ -240,6 +245,11 @@ def run_stdio():
 
 def run_http(host: str = "0.0.0.0", port: int = 8899, mode: str = "sse"):
     """Run the server using HTTP transport (SSE or Streamable HTTP)"""
+    # Lazy import uvicorn and create Starlette app only when HTTP transport is needed
+    import uvicorn
+    
+    starlette_app = _create_starlette_app()
+    
     if mode == "sse":
         print(f"Starting SSE server on http://{host}:{port}")
         print(f"SSE Endpoint: http://{host}:{port}/sse")

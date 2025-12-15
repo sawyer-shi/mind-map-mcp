@@ -56,6 +56,8 @@ python server.py stdio
 }
 ```
 
+⚠️ **Important**: Always use a **local absolute path** to `server.py`. Do NOT use GitHub URLs (e.g., `https://raw.githubusercontent.com/...`) as they will fail due to missing dependencies and module imports. See `MCP_CONFIG.md` for detailed configuration instructions.
+
 ### 2. SSE Transport (Server-Sent Events - Deprecated)
 
 ```bash
