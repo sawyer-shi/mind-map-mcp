@@ -89,6 +89,7 @@ class MindMapHorizontalTool:
         """
         Universal Markdown parser
         """
+        markdown_text = markdown_text.replace('\\n', '\n')
         lines = markdown_text.strip().split('\n')
         nodes = []
         node_stack = []

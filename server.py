@@ -3,7 +3,16 @@ import base64
 import json
 import argparse
 import sys
+import os
 import uvicorn
+
+# Set UTF-8 encoding for Windows to avoid Chinese character encoding issues
+if sys.platform == 'win32':
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional
 
@@ -22,10 +31,10 @@ from starlette.applications import Starlette
 from starlette.responses import Response
 from starlette.routing import Route
 
-# Import existing tool modules
-import mind_map_center
-import mind_map_free
-import mind_map_horizontal
+# Import existing tool modules from src package
+from src import mind_map_center
+from src import mind_map_free
+from src import mind_map_horizontal
 
 # Initialize the MCP server
 server = Server("mind-map-mcp")
@@ -157,11 +166,20 @@ async def handle_call_tool(name: str, arguments: dict | None) -> List[TextConten
 sse = SseServerTransport("/messages")
 
 async def handle_sse(request):
+    """Handle SSE (Server-Sent Events) transport"""
     async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
         await server.run(streams[0], streams[1], server.create_initialization_options())
 
 async def handle_messages(request):
+    """Handle POST messages for SSE transport"""
     await sse.handle_post_message(request.scope, request.receive, request._send)
+
+async def handle_streamable_http(request):
+    """Handle Streamable HTTP transport (recommended for remote connections)"""
+    # Streamable HTTP uses the same SSE transport but with a different endpoint
+    # This allows clients to connect via HTTP POST to /mcp endpoint
+    async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
+        await server.run(streams[0], streams[1], server.create_initialization_options())
 
 async def generate_mindmap_http(request):
     """
@@ -205,9 +223,10 @@ async def generate_mindmap_http(request):
 
 starlette_app = Starlette(
     routes=[
-        Route("/sse", endpoint=handle_sse),
-        Route("/messages", endpoint=handle_messages, methods=["POST"]),
-        Route("/generate", endpoint=generate_mindmap_http, methods=["POST"]),
+        Route("/sse", endpoint=handle_sse),  # SSE transport endpoint
+        Route("/mcp", endpoint=handle_streamable_http),  # Streamable HTTP transport endpoint
+        Route("/messages", endpoint=handle_messages, methods=["POST"]),  # SSE messages endpoint
+        Route("/generate", endpoint=generate_mindmap_http, methods=["POST"]),  # Direct image generation endpoint
     ]
 )
 
@@ -219,23 +238,45 @@ def run_stdio():
     
     asyncio.run(_run())
 
-def run_http(host: str = "0.0.0.0", port: int = 8899):
-    """Run the server using HTTP/SSE transport"""
-    print(f"Starting SSE/HTTP server on http://{host}:{port}")
-    print(f"SSE Endpoint: http://{host}:{port}/sse")
-    print(f"Messages Endpoint: http://{host}:{port}/messages")
+def run_http(host: str = "0.0.0.0", port: int = 8899, mode: str = "sse"):
+    """Run the server using HTTP transport (SSE or Streamable HTTP)"""
+    if mode == "sse":
+        print(f"Starting SSE server on http://{host}:{port}")
+        print(f"SSE Endpoint: http://{host}:{port}/sse")
+        print(f"Messages Endpoint: http://{host}:{port}/messages")
+    else:  # streamable-http
+        print(f"Starting Streamable HTTP server on http://{host}:{port}")
+        print(f"Streamable HTTP Endpoint: http://{host}:{port}/mcp")
     uvicorn.run(starlette_app, host=host, port=port)
 
 if __name__ == "__main__":
+    import os
+    
     parser = argparse.ArgumentParser(description="Mind Map MCP Server")
-    parser.add_argument("--transport", choices=["stdio", "http"], default="stdio", help="Transport protocol to use")
+    parser.add_argument("mode", nargs="?", choices=["stdio", "sse", "streamable-http"], help="Mode to run the server in")
+    parser.add_argument("--transport", choices=["stdio", "http"], help="Deprecated: use mode instead")
     parser.add_argument("--host", default="0.0.0.0", help="Host for HTTP server")
-    parser.add_argument("--port", type=int, default=8899, help="Port for HTTP server")
+    parser.add_argument("--port", type=int, default=None, help="Port for HTTP server")
     
     args = parser.parse_args()
     
-    if args.transport == "stdio":
+    # Determine mode
+    mode = args.mode
+    if not mode:
+        if args.transport == "http":
+            mode = "sse"
+        else:
+            mode = "stdio"
+            
+    # Determine port
+    port = args.port
+    if port is None:
+        port = int(os.environ.get("FASTMCP_PORT", 8899))
+    
+    if mode == "stdio":
         run_stdio()
-    else:
-        run_http(args.host, args.port)
+    elif mode == "sse":
+        run_http(args.host, port, mode="sse")
+    else:  # streamable-http
+        run_http(args.host, port, mode="streamable-http")
 

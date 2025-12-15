@@ -1,15 +1,26 @@
 # Mind Map MCP Server
 
-An MCP (Model Context Protocol) server for generating mind map images from Markdown text.
+**🔒 Fully Local Deployment - No External Services or API Keys Required - Complete Data Privacy & Security**
+
+A Model Context Protocol (MCP) server that lets you generate beautiful mind map images from Markdown text without needing any external design tools. Deploy completely locally with no external services, no API keys, and no data leaving your machine - ensuring complete data privacy and security. Transform your ideas, notes, and structured content into visual mind maps with your AI agent.
 
 ## Features
 
-*   **Three Layout Modes**:
-    *   **Center Layout**: Radial layout, best for core concepts.
-    *   **Horizontal Layout**: Left-to-right layout, best for timelines/processes.
-    *   **Free/Smart Layout**: Automatically selects the best layout based on complexity.
-*   **Dual Protocol Support**: Supports both Stdio and SSE/HTTP transports.
-*   **Chinese Support**: Built-in font detection for Chinese characters.
+*   **Mind Map Generation** (🎨): Create beautiful, professional mind maps from Markdown text with three distinct layout modes.
+*   **Three Layout Modes** (📊): 
+    *   **Center Layout**: Radial layout, perfect for core concepts and brainstorming.
+    *   **Horizontal Layout**: Left-to-right layout, ideal for timelines, processes, and hierarchical structures.
+    *   **Free/Smart Layout**: Automatically selects the best layout based on content complexity.
+*   **Markdown Support** (📝): Convert Markdown headers (`#`) and lists (`-`, `1.`) into structured mind map hierarchies.
+*   **Chinese Character Support** (🈳): Built-in font detection and automatic handling for Chinese characters.
+*   **Image Output** (🖼️): Generate high-quality PNG images encoded in Base64 for easy integration.
+*   **Triple Transport Support** (🔌): stdio (for local use), SSE (deprecated), and streamable HTTP (recommended for remote connections).
+*   **Remote & Local** (🌐): Works both locally with Cursor/Claude Desktop and as a remote service.
+*   **HTTP API** (🌍): Direct HTTP endpoint for generating mind maps without MCP protocol.
+*   **Zero Dependencies on Design Tools** (✨): No need for external design software or manual drawing.
+*   **AI Agent Integration** (🤖): Seamlessly integrate with AI agents through MCP protocol.
+*   **Complete Data Privacy** (🔒): Fully local deployment with no external services, no API keys required, and all data stays on your machine for maximum security.
+
 
 ## Installation
 
@@ -21,12 +32,12 @@ pip install -r requirements.txt
 
 ## Usage
 
-### 1. Stdio Mode (Default)
+The server supports three transport methods:
 
-Use this for integration with Cursor or Claude Desktop.
+### 1. Stdio Transport (for local use)
 
 ```bash
-python server.py
+python server.py stdio
 ```
 
 **Configuration Example**:
@@ -37,21 +48,72 @@ python server.py
     "mind-map": {
       "command": "python",
       "args": [
-        "/absolute/path/to/mind-map-mcp-pro/server.py"
+        "/absolute/path/to/mind-map-mcp-pro/server.py",
+        "stdio"
       ]
     }
   }
 }
 ```
 
-### 2. HTTP/SSE Mode
+### 2. SSE Transport (Server-Sent Events - Deprecated)
 
 ```bash
-python server.py --transport http --port 8899
+python server.py sse
 ```
 
-*   **SSE Endpoint**: `http://localhost:8899/sse`
-*   **Messages Endpoint**: `http://localhost:8899/messages`
+**SSE transport connection**:
+
+```json
+{
+  "mcpServers": {
+    "mind-map": {
+      "url": "http://localhost:8899/sse"
+    }
+  }
+}
+```
+
+### 3. Streamable HTTP Transport (Recommended for remote connections)
+
+```bash
+python server.py streamable-http
+```
+
+**Streamable HTTP transport connection**:
+
+```json
+{
+  "mcpServers": {
+    "mind-map": {
+      "url": "http://localhost:8899/mcp"
+    }
+  }
+}
+```
+
+### Environment Variables
+
+**SSE and Streamable HTTP Transports**
+
+When running the server with the SSE or Streamable HTTP protocols, you can set the `FASTMCP_PORT` environment variable to control the port the server listens on (default is 8899 if not set).
+
+**Example (Windows PowerShell)**:
+
+```powershell
+$env:FASTMCP_PORT="8007"
+python server.py streamable-http
+```
+
+**Example (Linux/macOS)**:
+
+```bash
+FASTMCP_PORT=8007 python server.py streamable-http
+```
+
+**Stdio Transport**
+
+When using the stdio protocol, no environment variables are required. The server communicates directly through standard input/output.
 
 ## Tools
 
@@ -61,3 +123,16 @@ python server.py --transport http --port 8899
 
 All tools accept a `markdown_content` string as input.
 
+## HTTP Generation API
+
+You can also generate images directly via HTTP POST:
+
+**Endpoint**: `POST /generate`
+
+**Body**:
+```json
+{
+  "markdown_content": "# Root\n- Child 1\n- Child 2",
+  "layout": "free"  // Options: center, horizontal, free
+}
+```

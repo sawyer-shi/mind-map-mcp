@@ -1,39 +1,46 @@
 # Mind Map MCP Server
 
-这是一个基于 MCP (Model Context Protocol) 的脑图生成服务。它支持将 Markdown 文本转换为精美的思维导图图片。
+**🔒 完全本地部署 - 无需外部服务和 API 密钥 - 完整的数据隐私与安全保障**
 
-本项目复用了经过验证的成熟脑图生成算法，支持三种布局模式，并提供 Stdio 和 SSE/HTTP 两种通信协议，方便接入 Cursor、Claude Desktop 等 MCP 客户端。
+一个基于 MCP (Model Context Protocol) 的思维导图生成服务，让你无需任何外部设计工具即可从 Markdown 文本生成精美的思维导图图片。完全本地部署，无需外部服务，无需 API 密钥，所有数据都在本地处理，确保完整的数据隐私和安全。将你的想法、笔记和结构化内容转换为可视化思维导图，与你的 AI 智能体无缝集成。
 
 ## 功能特性
 
-*   **三种布局模式**：
-    *   **Center Layout (中心布局)**：适合核心概念的发散，呈放射状。
-    *   **Horizontal Layout (水平布局)**：适合展示时间线、流程或层级结构，从左向右排列。
-    *   **Free/Smart Layout (智能布局)**：根据内容复杂度自动选择最合适的布局。
-*   **多协议支持**：同时支持标准 Stdio 传输和 SSE (Server-Sent Events) over HTTP。
-*   **中文支持**：内置/自动检测中文字体，确保中文内容显示正常。
+*   **思维导图生成** (🎨): 从 Markdown 文本创建精美、专业的思维导图，支持三种不同的布局模式。
+*   **三种布局模式** (📊):
+    *   **中心布局**: 放射状布局，适合核心概念和头脑风暴。
+    *   **水平布局**: 从左到右的布局，适合时间线、流程和层级结构。
+    *   **智能布局**: 根据内容复杂度自动选择最合适的布局。
+*   **Markdown 支持** (📝): 将 Markdown 标题 (`#`) 和列表 (`-`, `1.`) 转换为结构化的思维导图层级。
+*   **中文字符支持** (🈳): 内置字体检测和自动处理中文字符。
+*   **图片输出** (🖼️): 生成高质量的 PNG 图片，以 Base64 编码，便于集成。
+*   **三重传输支持** (🔌): stdio（本地使用）、SSE（已废弃）和 streamable HTTP（推荐用于远程连接）。
+*   **远程与本地** (🌐): 可在本地与 Cursor/Claude Desktop 配合使用，也可作为远程服务运行。
+*   **HTTP API** (🌍): 提供直接的 HTTP 接口，无需 MCP 协议即可生成思维导图。
+*   **无需设计工具** (✨): 无需外部设计软件或手动绘图。
+*   **AI 智能体集成** (🤖): 通过 MCP 协议与 AI 智能体无缝集成。
+*   **完整数据隐私** (🔒): 完全本地部署，无需外部服务，无需 API 密钥，所有数据都在本地处理，确保最大程度的数据安全。
+
 
 ## 安装
 
-1.  克隆或下载本项目。
-2.  安装依赖：
+1.  安装依赖：
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 使用方法
+## 使用方法 (Usage)
 
-### 1. Stdio 模式 (默认)
+本服务支持三种传输方式：
 
-这是 MCP 客户端（如 Cursor, Claude Desktop）最常用的集成方式。
+### 1. Stdio 传输 (本地使用)
 
-**运行命令**：
 ```bash
-python server.py
+python server.py stdio
 ```
 
-**在 Cursor/Claude Desktop 中配置**：
+**配置示例**：
 
 ```json
 {
@@ -41,53 +48,91 @@ python server.py
     "mind-map": {
       "command": "python",
       "args": [
-        "绝对路径/path/to/mind-map-mcp-pro/server.py"
+        "/绝对路径/path/to/mind-map-mcp-pro/server.py",
+        "stdio"
       ]
     }
   }
 }
 ```
 
-### 2. HTTP/SSE 模式
+### 2. SSE 传输 (Server-Sent Events - 已废弃)
 
-如果你需要通过网络访问或使用支持 SSE 的客户端。
-
-**运行命令**：
 ```bash
-python server.py --transport http --port 8899
+python server.py sse
 ```
 
-*   **SSE 端点**: `http://localhost:8899/sse`
-*   **消息端点**: `http://localhost:8899/messages`
+**SSE 连接配置**：
+
+```json
+{
+  "mcpServers": {
+    "mind-map": {
+      "url": "http://localhost:8899/sse"
+    }
+  }
+}
+```
+
+### 3. Streamable HTTP 传输 (推荐用于远程连接)
+
+```bash
+python server.py streamable-http
+```
+
+**Streamable HTTP 连接配置**：
+
+```json
+{
+  "mcpServers": {
+    "mind-map": {
+      "url": "http://localhost:8899/mcp"
+    }
+  }
+}
+```
+
+### 环境变量
+
+**SSE 和 Streamable HTTP 传输**
+
+当使用 SSE 或 Streamable HTTP 协议运行服务器时，你可以设置 `FASTMCP_PORT` 环境变量来控制服务器监听的端口（如果未设置，默认为 8899）。
+
+**示例 (Windows PowerShell)**：
+
+```powershell
+$env:FASTMCP_PORT="8007"
+python server.py streamable-http
+```
+
+**示例 (Linux/macOS)**：
+
+```bash
+FASTMCP_PORT=8007 python server.py streamable-http
+```
+
+**Stdio 传输**
+
+使用 stdio 协议时，不需要设置环境变量。服务器通过标准输入/输出直接通信。
 
 ## 可用工具 (Tools)
 
-### `create_center_mindmap`
-生成中心放射状的脑图。
-*   **参数**: `markdown_content` (Markdown 格式的文本，使用 `#` 或 `-` 表示层级)
+*   `create_center_mindmap`: 生成中心放射状的脑图。
+*   `create_horizontal_mindmap`: 生成水平方向的脑图。
+*   `create_free_mindmap`: 智能选择布局生成脑图。
 
-### `create_horizontal_mindmap`
-生成水平方向的脑图。
-*   **参数**: `markdown_content`
+所有工具均接受 `markdown_content` 字符串作为输入。
 
-### `create_free_mindmap`
-智能选择布局生成脑图。
-*   **参数**: `markdown_content`
+## HTTP 图片生成 API
 
-## 示例输入
+你也可以通过 HTTP POST 直接生成图片：
 
-```markdown
-# 核心主题
-## 子主题 A
-- 细节 1
-- 细节 2
-## 子主题 B
-1. 步骤 1
-2. 步骤 2
+**接口地址**: `POST /generate`
+
+**请求体**:
+```json
+{
+  "markdown_content": "# 根节点\n- 子节点 1\n- 子节点 2",
+  "layout": "free"  // 可选值: center, horizontal, free
+}
 ```
-
-## 注意事项
-
-*   本项目依赖 `matplotlib` 和 `PIL` 进行绘图。
-*   生成的图片将以 Base64 编码的形式包含在 MCP 响应中。
-
