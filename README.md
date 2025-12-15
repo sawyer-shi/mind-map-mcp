@@ -1,5 +1,5 @@
 # Mind Map MCP Server
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=mind-map-mcp&config=eyJjb21tYW5kIjogInV2IiwgImFyZ3MiOiBbInJ1biIsICJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb20vc2F3eWVyLXNoaS9taW5kLW1hcC1tY3AvbWFpbi9zZXJ2ZXIucHkiLCAic3RkaW8iXX0%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=Mind+Map+MCP&config=eyJjb21tYW5kIjoidXYiLCJhcmdzIjpbInJ1biIsImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9zYXd5ZXItc2hpL21pbmQtbWFwLW1jcC9tYXN0ZXIvc2VydmVyLnB5Iiwic3RkaW8iXX0%3D)
 
 **🔒 Fully Local Deployment - No External Services or API Keys Required - Complete Data Privacy & Security**
 
